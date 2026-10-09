@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from src.quality import clean, quality_report
+from src.quality import clean, quality_report, validate_required_columns
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 def run(input_path: str = "data/raw/sample_sales.csv", output_path: str = "data/processed/clean_sales.csv") -> dict:
     load_dotenv()
     df = pd.read_csv(input_path)
+    validate_required_columns(df)
     before = quality_report(df)
     clean_df = clean(df)
     after = quality_report(clean_df)

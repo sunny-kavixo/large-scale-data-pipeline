@@ -2,16 +2,24 @@ import pandas as pd
 
 REQUIRED = ["order_id", "order_date", "city", "product", "quantity", "unit_price", "revenue"]
 
+def missing_required_columns(df: pd.DataFrame) -> list[str]:
+    return [column for column in REQUIRED if column not in df.columns]
+
+def validate_required_columns(df: pd.DataFrame) -> None:
+    missing = missing_required_columns(df)
+    if missing:
+        raise ValueError(f"Missing required columns: {', '.join(missing)}")
+
 def quality_report(df: pd.DataFrame) -> dict:
-    missing_columns = [c for c in REQUIRED if c not in df.columns]
     return {
         "rows": int(len(df)),
         "duplicate_rows": int(df.duplicated().sum()),
         "missing_values": {k: int(v) for k, v in df.isna().sum().items() if v},
-        "missing_columns": missing_columns,
+        "missing_columns": missing_required_columns(df),
     }
 
 def clean(df: pd.DataFrame) -> pd.DataFrame:
+    validate_required_columns(df)
     out = df.copy()
     out = out.drop_duplicates()
     out = out.dropna(subset=["order_id", "order_date", "city", "product"])
